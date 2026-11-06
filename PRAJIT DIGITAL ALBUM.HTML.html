@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prajit Digital Album</title>
+  
+  <!-- App Icons for Mobile Home Screens -->
+  <link rel="icon" href="1761410005401.jpg" type="image/jpeg">
+  <link rel="apple-touch-icon" href="1761410005401.jpg">
+  
+  <style>
+    /* --- CSS STYLES --- */
+    :root {
+      --bg-color: #0b0c10;
+      --header-bg: linear-gradient(135deg, #2a0845, #6441A5);
+      --gold-accent: #FFD700;
+      --text-light: #f8f8f8;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-light);
+      overflow-x: hidden;
+    }
+
+    .album-header {
+      background: var(--header-bg);
+      padding: 40px 20px;
+      text-align: center;
+      border-bottom: 4px solid var(--gold-accent);
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
+    }
+
+    /* Responsive Logo Styles (Mobile First) */
+    .site-logo {
+      width: 130px;
+      height: 130px;
+      border-radius: 50%;
+      border: 4px solid var(--gold-accent);
+      object-fit: cover;
+      margin-bottom: 15px;
+      box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+      background-color: #0b0c10;
+      transition: all 0.3s ease;
+    }
+
+    .album-header h1 {
+      margin: 0;
+      font-size: 3em;
+      color: var(--gold-accent);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+    }
+
+    .album-header p {
+      margin-top: 10px;
+      font-size: 1.2em;
+      font-style: italic;
+      color: #e0e0e0;
+    }
+
+    /* TV & Large Desktop Screens */
+    @media (min-width: 1200px) {
+      .site-logo {
+        width: 200px;
+        height: 200px;
+        border-width: 6px;
+      }
+    }
+
+    /* Adjust Header Spacing for Mobile Phones */
+    @media (max-width: 600px) {
+      .album-header h1 {
+        font-size: 2em;
+      }
+      .album-header {
+        padding: 20px 10px;
+      }
+    }
+
+    .controls {
+      text-align: center;
+      margin: 30px 0 10px 0;
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      display: inline-block;
+      background: linear-gradient(45deg, #FFD700, #FFA500);
+      color: #2a0845;
+      padding: 12px 25px;
+      font-size: 1.1em;
+      font-weight: bold;
+      border-radius: 50px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(255, 215, 0, 0.8);
+      background: linear-gradient(45deg, #FFF8DC, #FFD700);
+    }
+
+    .slideshow-btn {
+      background: linear-gradient(45deg, #00C9FF, #92FE9D);
+      color: #0b0c10;
+      box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
+    }
+
+    .gallery-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      padding: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+      perspective: 1200px;
+    }
+
+    .gallery-item {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 2px solid transparent;
+      transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+      background-color: #1a1a1d;
+      position: relative;
+      transform-style: preserve-3d;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .gallery-item img, .gallery-item video {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s ease;
+    }
+
+    .caption-bar {
+      padding: 12px;
+      text-align: center;
+      background: #0b0c10;
+      color: var(--gold-accent);
+      font-weight: bold;
+      font-size: 0.9em;
+      border-top: 1px solid #333;
+    }
+
+    .gallery-item:hover {
+      border: 2px solid var(--gold-accent);
+      transform: translateY(-10px) scale(1.02);
+      z-index: 5;
+    }
+
+    .video-indicator {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0,0,0,0.6);
+      color: var(--gold-accent);
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.9em;
+      font-weight: bold;
+      z-index: 10;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none; 
+      position: fixed;
+      z-index: 100;
+      padding-top: 2vh;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      perspective: 1500px;
+    }
+
+    .modal.show-modal {
+      display: flex;
+      flex-direction: column;
+      background-color: rgba(0, 0, 0, 0.95); 
+      backdrop-filter: blur(12px);
+    }
+
+    .modal-toolbar {
+      width: 100%;
+      display: flex;
+      justify-content: flex-end;
+      padding: 20px;
+      box-sizing: border-box;
+      gap: 20px;
+    }
+
+    .icon-btn {
+      color: var(--gold-accent);
+      font-size: 35px;
+      cursor: pointer;
+      transition: 0.3s;
+      background: none;
+      border: none;
+    }
+    
+    .icon-btn:hover {
+      color: #ff416c;
+      transform: scale(1.2);
+    }
+
+    .close-btn:hover {
+      color: #fff;
+    }
+
+    .modal-content-wrapper {
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 90%;
+      max-height: 80vh;
+      animation: grandUnfold 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    .modal-content-wrapper img, .modal-content-wrapper video {
+      max-width: 100%;
+      max-height: 70vh;
+      border: 4px solid var(--gold-accent);
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    }
+
+    .modal-caption {
+      margin-top: 15px;
+      font-size: 1.5em;
+      color: var(--gold-accent);
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      text-align: center;
+    }
+
+    @keyframes grandUnfold {
+      0% { opacity: 0; transform: translateY(100px) scale(0.8); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="album-header">
+    <!-- Responsive Site Logo -->
+    <img src="1761410005401.jpg" alt="Prajit Computer Institute Logo" class="site-logo">
+    <h1>Celebration Memories</h1>
+    <p>A Grand Digital Collection</p>
+  </header>
+
+  <div class="controls">
+    <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
+    <label for="fileInput" class="action-btn">
+      <span>+ Add Media</span>
+    </label>
+    <button id="slideshowBtn" class="action-btn slideshow-btn">
+      <span>▶ Play Slideshow</span>
+    </button>
+  </div>
+
+  <!-- The gallery is empty by default, waiting for your uploads -->
+  <main class="gallery-container" id="gallery">
+  </main>
+
+  <!-- Modal -->
+  <div id="mediaModal" class="modal">
+    <div class="modal-toolbar">
+      <button id="deleteItemBtn" class="icon-btn" title="Delete this item">🗑</button>
+      <button class="icon-btn close-btn" onclick="closeModal()" title="Close">✖</button>
+    </div>
+    <div id="modalContainer" class="modal-content-wrapper"></div>
+  </div>
+
+  <script>
+    // --- DATABASE & STATE LOGIC ---
+    let db;
+    let mediaList = []; 
+    let currentSlideshowIndex = 0;
+    let slideshowInterval = null;
+    let currentlyViewedDbKey = null; 
+
+    const gallery = document.getElementById('gallery');
+    const fileInput = document.getElementById('fileInput');
+    const request = indexedDB.open("GrandAlbumDB_v2", 1);
+
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      db.createObjectStore("media", { keyPath: "id", autoIncrement: true });
+    };
+
+    request.onsuccess = function(event) {
+      db = event.target.result;
+      loadSavedMedia(); 
+    };
+
+    // --- RENDER LOGIC ---
+    function renderMedia(item) {
+      const newDiv = document.createElement('div');
+      newDiv.className = 'gallery-item';
+      
+      const mediaURL = URL.createObjectURL(item.file);
+      mediaList.push({ ...item, url: mediaURL }); 
+      
+      if (item.type.startsWith('video/')) {
+        const newVid = document.createElement('video');
+        newVid.src = mediaURL;
+        newVid.muted = true; 
+        newVid.loop = true;
+        newVid.autoplay = true;
+        
+        const indicator = document.createElement('div');
+        indicator.className = 'video-indicator';
+        indicator.innerText = '▶ Video';
+        newDiv.appendChild(indicator);
+        newDiv.appendChild(newVid);
+      } else {
+        const newImg = document.createElement('img');
+        newImg.src = mediaURL;
+        newDiv.appendChild(newImg);
+      }
+
+      const captionBar = document.createElement('div');
+      captionBar.className = 'caption-bar';
+      captionBar.innerText = item.caption || "Special Moment";
+      newDiv.appendChild(captionBar);
+      
+      newDiv.onclick = function() { 
+        openModal(item.type, mediaURL, item.caption, item.id); 
+      };
+      
+      gallery.appendChild(newDiv);
+    }
+
+    function loadSavedMedia() {
+      const objectStore = db.transaction("media").objectStore("media");
+      objectStore.openCursor().onsuccess = function(event) {
+        const cursor = event.target.result;
+        if (cursor) {
+          renderMedia(cursor.value);
+          cursor.continue();
+        }
+      };
+    }
+
+    // --- UPLOAD LOGIC ---
+    fileInput.addEventListener('change', function(event) {
+      const files = event.target.files;
+      if (files.length === 0) return;
+
+      const transaction = db.transaction(["media"], "readwrite");
+      const objectStore = transaction.objectStore("media");
+
+      Array.from(files).forEach((file) => {
+        let userCaption = prompt(`Enter a caption for ${file.name} (or leave blank):`);
+        if (!userCaption) userCaption = "Special Moment";
+
+        const newItem = { file: file, type: file.type, caption: userCaption };
+        const addRequest = objectStore.add(newItem);
+        
+        addRequest.onsuccess = function(e) {
+          newItem.id = e.target.result; 
+          renderMedia(newItem);
+        };
+      });
+      
+      fileInput.value = ""; 
+    });
+
+    // --- MODAL & DELETE LOGIC ---
+    const modal = document.getElementById("mediaModal");
+    const modalContainer = document.getElementById("modalContainer");
+    const deleteItemBtn = document.getElementById("deleteItemBtn");
+
+    function openModal(type, src, captionText, dbKey) {
+      stopSlideshow();
+      currentlyViewedDbKey = dbKey;
+      
+      deleteItemBtn.style.display = dbKey ? "inline-block" : "none";
+
+      modal.classList.add("show-modal");
+      modalContainer.innerHTML = ""; 
+
+      if (type.startsWith('video')) {
+        const vid = document.createElement('video');
+        vid.src = src;
+        vid.controls = true;
+        vid.autoplay = true;
+        modalContainer.appendChild(vid);
+      } else {
+        const img = document.createElement('img');
+        img.src = src;
+        modalContainer.appendChild(img);
+      }
+
+      const captionNode = document.createElement('div');
+      captionNode.className = 'modal-caption';
+      captionNode.innerText = captionText || "Special Moment";
+      modalContainer.appendChild(captionNode);
+    }
+
+    function closeModal() {
+      modal.classList.remove("show-modal");
+      modalContainer.innerHTML = ""; 
+      stopSlideshow();
+    }
+
+    deleteItemBtn.onclick = function() {
+      if (currentlyViewedDbKey && confirm("Delete this memory?")) {
+        const transaction = db.transaction(["media"], "readwrite");
+        transaction.objectStore("media").delete(currentlyViewedDbKey);
+        transaction.oncomplete = function() {
+          location.reload(); 
+        };
+      }
+    };
+
+    // --- SLIDESHOW LOGIC ---
+    const slideshowBtn = document.getElementById("slideshowBtn");
+
+    function startSlideshow() {
+      if (mediaList.length === 0) {
+        alert("Add some photos or videos first!");
+        return;
+      }
+      currentSlideshowIndex = 0;
+      playNextSlide();
+    }
+
+    function playNextSlide() {
+      if (currentSlideshowIndex >= mediaList.length) {
+        currentSlideshowIndex = 0; 
+      }
+      
+      const item = mediaList[currentSlideshowIndex];
+      openModal(item.type, item.url, item.caption, item.id);
+      
+      if (item.type.startsWith('video/')) {
+        const vidElement = modalContainer.querySelector('video');
+        vidElement.onended = () => {
+          currentSlideshowIndex++;
+          playNextSlide();
+        };
+      } else {
+        slideshowInterval = setTimeout(() => {
+          currentSlideshowIndex++;
+          playNextSlide();
+        }, 3000); 
+      }
+    }
+
+    function stopSlideshow() {
+      if (slideshowInterval) {
+        clearTimeout(slideshowInterval);
+        slideshowInterval = null;
+      }
+    }
+
+    slideshowBtn.onclick = startSlideshow;
+
+    window.onclick = function(event) { if (event.target === modal) closeModal(); }
+    document.addEventListener('keydown', function(event) { if (event.key === "Escape") closeModal(); });
+
+  </script>
+</body>
+</html>
