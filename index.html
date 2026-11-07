@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prajit Digital Album</title>
   
-  <!-- App Icons for Mobile Home Screens -->
   <link rel="icon" href="1761410005401.jpg" type="image/jpeg">
   <link rel="apple-touch-icon" href="1761410005401.jpg">
   
@@ -16,6 +15,7 @@
       --header-bg: linear-gradient(135deg, #2a0845, #6441A5);
       --gold-accent: #FFD700;
       --text-light: #f8f8f8;
+      --danger-color: #ff416c;
     }
 
     body {
@@ -35,7 +35,6 @@
       box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
     }
 
-    /* Responsive Logo Styles (Mobile First) */
     .site-logo {
       width: 130px;
       height: 130px;
@@ -63,23 +62,13 @@
       color: #e0e0e0;
     }
 
-    /* TV & Large Desktop Screens */
     @media (min-width: 1200px) {
-      .site-logo {
-        width: 200px;
-        height: 200px;
-        border-width: 6px;
-      }
+      .site-logo { width: 200px; height: 200px; border-width: 6px; }
     }
 
-    /* Adjust Header Spacing for Mobile Phones */
     @media (max-width: 600px) {
-      .album-header h1 {
-        font-size: 2em;
-      }
-      .album-header {
-        padding: 20px 10px;
-      }
+      .album-header h1 { font-size: 2em; }
+      .album-header { padding: 20px 10px; }
     }
 
     .controls {
@@ -111,11 +100,8 @@
       background: linear-gradient(45deg, #FFF8DC, #FFD700);
     }
 
-    .slideshow-btn {
-      background: linear-gradient(45deg, #00C9FF, #92FE9D);
-      color: #0b0c10;
-      box-shadow: 0 4px 15px rgba(0, 201, 255, 0.4);
-    }
+    .slideshow-btn { background: linear-gradient(45deg, #00C9FF, #92FE9D); color: #0b0c10; }
+    .camera-btn { background: linear-gradient(45deg, #8E2DE2, #4A00E0); color: white; }
 
     .gallery-container {
       display: grid;
@@ -136,7 +122,6 @@
       box-shadow: 0 5px 15px rgba(0,0,0,0.6);
       background-color: #1a1a1d;
       position: relative;
-      transform-style: preserve-3d;
       display: flex;
       flex-direction: column;
     }
@@ -216,14 +201,8 @@
       border: none;
     }
     
-    .icon-btn:hover {
-      color: #ff416c;
-      transform: scale(1.2);
-    }
-
-    .close-btn:hover {
-      color: #fff;
-    }
+    .icon-btn:hover { color: var(--danger-color); transform: scale(1.2); }
+    .close-btn:hover { color: #fff; }
 
     .modal-content-wrapper {
       margin: auto;
@@ -251,16 +230,41 @@
       text-align: center;
     }
 
+    /* Live Camera specific styles */
+    #cameraFeed {
+      width: 100%;
+      max-width: 800px;
+      border-radius: 12px;
+      border: 4px solid var(--gold-accent);
+      background-color: #000;
+      transform: scaleX(1); /* Mirror effect handled in JS */
+    }
+    
+    .camera-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    .record-btn { background: var(--danger-color); color: white; }
+    .recording-active { animation: pulse 1s infinite alternate; }
+
     @keyframes grandUnfold {
       0% { opacity: 0; transform: translateY(100px) scale(0.8); }
       100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    
+    @keyframes pulse {
+      0% { box-shadow: 0 0 10px var(--danger-color); }
+      100% { box-shadow: 0 0 30px var(--danger-color), 0 0 10px white; }
     }
   </style>
 </head>
 <body>
 
   <header class="album-header">
-    <!-- Responsive Site Logo -->
     <img src="1761410005401.jpg" alt="Prajit Computer Institute Logo" class="site-logo">
     <h1>Celebration Memories</h1>
     <p>A Grand Digital Collection</p>
@@ -268,25 +272,35 @@
 
   <div class="controls">
     <input type="file" id="fileInput" accept="image/*,video/*" multiple hidden>
-    <label for="fileInput" class="action-btn">
-      <span>+ Add Media</span>
-    </label>
-    <button id="slideshowBtn" class="action-btn slideshow-btn">
-      <span>▶ Play Slideshow</span>
-    </button>
+    <label for="fileInput" class="action-btn"><span>📂 Upload Media</span></label>
+    <button id="openCameraBtn" class="action-btn camera-btn"><span>📷 Open Camera</span></button>
+    <button id="slideshowBtn" class="action-btn slideshow-btn"><span>▶ Play Slideshow</span></button>
   </div>
 
-  <!-- The gallery is empty by default, waiting for your uploads -->
-  <main class="gallery-container" id="gallery">
-  </main>
+  <main class="gallery-container" id="gallery"></main>
 
-  <!-- Modal -->
+  <!-- Viewing Modal -->
   <div id="mediaModal" class="modal">
     <div class="modal-toolbar">
       <button id="deleteItemBtn" class="icon-btn" title="Delete this item">🗑</button>
       <button class="icon-btn close-btn" onclick="closeModal()" title="Close">✖</button>
     </div>
     <div id="modalContainer" class="modal-content-wrapper"></div>
+  </div>
+
+  <!-- Camera Modal -->
+  <div id="cameraModal" class="modal">
+    <div class="modal-toolbar">
+      <button id="switchCamBtn" class="icon-btn" title="Switch Camera" style="color:white;">🔄</button>
+      <button class="icon-btn close-btn" onclick="closeCameraModal()" title="Close Camera">✖</button>
+    </div>
+    <div class="modal-content-wrapper" style="animation: none;">
+      <video id="cameraFeed" autoplay playsinline></video>
+      <div class="camera-actions">
+        <button id="takePhotoBtn" class="action-btn">📸 Take Photo</button>
+        <button id="recordVideoBtn" class="action-btn record-btn">🔴 Start Video</button>
+      </div>
+    </div>
   </div>
 
   <script>
@@ -298,14 +312,12 @@
     let currentlyViewedDbKey = null; 
 
     const gallery = document.getElementById('gallery');
-    const fileInput = document.getElementById('fileInput');
     const request = indexedDB.open("GrandAlbumDB_v2", 1);
 
     request.onupgradeneeded = function(event) {
       db = event.target.result;
       db.createObjectStore("media", { keyPath: "id", autoIncrement: true });
     };
-
     request.onsuccess = function(event) {
       db = event.target.result;
       loadSavedMedia(); 
@@ -322,9 +334,7 @@
       if (item.type.startsWith('video/')) {
         const newVid = document.createElement('video');
         newVid.src = mediaURL;
-        newVid.muted = true; 
-        newVid.loop = true;
-        newVid.autoplay = true;
+        newVid.muted = true; newVid.loop = true; newVid.autoplay = true;
         
         const indicator = document.createElement('div');
         indicator.className = 'video-indicator';
@@ -342,10 +352,7 @@
       captionBar.innerText = item.caption || "Special Moment";
       newDiv.appendChild(captionBar);
       
-      newDiv.onclick = function() { 
-        openModal(item.type, mediaURL, item.caption, item.id); 
-      };
-      
+      newDiv.onclick = function() { openModal(item.type, mediaURL, item.caption, item.id); };
       gallery.appendChild(newDiv);
     }
 
@@ -360,124 +367,191 @@
       };
     }
 
-    // --- UPLOAD LOGIC ---
-    fileInput.addEventListener('change', function(event) {
-      const files = event.target.files;
-      if (files.length === 0) return;
+    function saveToDatabase(file, defaultCaptionText) {
+      let userCaption = prompt(`Enter a caption (or leave blank):`, defaultCaptionText);
+      if (!userCaption) userCaption = defaultCaptionText;
 
       const transaction = db.transaction(["media"], "readwrite");
-      const objectStore = transaction.objectStore("media");
-
-      Array.from(files).forEach((file) => {
-        let userCaption = prompt(`Enter a caption for ${file.name} (or leave blank):`);
-        if (!userCaption) userCaption = "Special Moment";
-
-        const newItem = { file: file, type: file.type, caption: userCaption };
-        const addRequest = objectStore.add(newItem);
-        
-        addRequest.onsuccess = function(e) {
-          newItem.id = e.target.result; 
-          renderMedia(newItem);
-        };
-      });
+      const newItem = { file: file, type: file.type, caption: userCaption };
+      const addRequest = transaction.objectStore("media").add(newItem);
       
-      fileInput.value = ""; 
+      addRequest.onsuccess = function(e) {
+        newItem.id = e.target.result; 
+        renderMedia(newItem);
+      };
+    }
+
+    // --- FILE UPLOAD LOGIC ---
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+      const files = event.target.files;
+      Array.from(files).forEach(file => saveToDatabase(file, "Uploaded File"));
+      this.value = ""; 
     });
 
-    // --- MODAL & DELETE LOGIC ---
-    const modal = document.getElementById("mediaModal");
+    // --- VIEWING MODAL LOGIC ---
+    const mediaModal = document.getElementById("mediaModal");
     const modalContainer = document.getElementById("modalContainer");
-    const deleteItemBtn = document.getElementById("deleteItemBtn");
 
     function openModal(type, src, captionText, dbKey) {
       stopSlideshow();
       currentlyViewedDbKey = dbKey;
-      
-      deleteItemBtn.style.display = dbKey ? "inline-block" : "none";
-
-      modal.classList.add("show-modal");
+      mediaModal.classList.add("show-modal");
       modalContainer.innerHTML = ""; 
 
       if (type.startsWith('video')) {
         const vid = document.createElement('video');
-        vid.src = src;
-        vid.controls = true;
-        vid.autoplay = true;
+        vid.src = src; vid.controls = true; vid.autoplay = true;
         modalContainer.appendChild(vid);
       } else {
         const img = document.createElement('img');
         img.src = src;
         modalContainer.appendChild(img);
       }
-
       const captionNode = document.createElement('div');
       captionNode.className = 'modal-caption';
-      captionNode.innerText = captionText || "Special Moment";
+      captionNode.innerText = captionText;
       modalContainer.appendChild(captionNode);
     }
 
     function closeModal() {
-      modal.classList.remove("show-modal");
+      mediaModal.classList.remove("show-modal");
       modalContainer.innerHTML = ""; 
       stopSlideshow();
     }
 
-    deleteItemBtn.onclick = function() {
+    document.getElementById("deleteItemBtn").onclick = function() {
       if (currentlyViewedDbKey && confirm("Delete this memory?")) {
-        const transaction = db.transaction(["media"], "readwrite");
-        transaction.objectStore("media").delete(currentlyViewedDbKey);
-        transaction.oncomplete = function() {
-          location.reload(); 
-        };
+        db.transaction(["media"], "readwrite").objectStore("media").delete(currentlyViewedDbKey).oncomplete = () => location.reload();
       }
     };
 
-    // --- SLIDESHOW LOGIC ---
-    const slideshowBtn = document.getElementById("slideshowBtn");
+    // --- LIVE CAMERA LOGIC ---
+    const cameraModal = document.getElementById('cameraModal');
+    const cameraFeed = document.getElementById('cameraFeed');
+    const recordVideoBtn = document.getElementById('recordVideoBtn');
+    
+    let currentStream = null;
+    let mediaRecorder = null;
+    let recordedChunks = [];
+    let isRecording = false;
+    let facingMode = "environment"; // Default to back camera
 
-    function startSlideshow() {
-      if (mediaList.length === 0) {
-        alert("Add some photos or videos first!");
-        return;
+    async function initCamera() {
+      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
+      try {
+        currentStream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: facingMode },
+          audio: true // Request audio for video recording
+        });
+        cameraFeed.srcObject = currentStream;
+        // Mirror the feed if using front camera
+        cameraFeed.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
+      } catch (err) {
+        alert("Camera access denied or unavailable.");
       }
-      currentSlideshowIndex = 0;
-      playNextSlide();
     }
 
-    function playNextSlide() {
-      if (currentSlideshowIndex >= mediaList.length) {
-        currentSlideshowIndex = 0; 
+    document.getElementById('openCameraBtn').onclick = () => {
+      cameraModal.classList.add('show-modal');
+      initCamera();
+    };
+
+    function closeCameraModal() {
+      cameraModal.classList.remove('show-modal');
+      if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
+      if (isRecording) stopRecording();
+    }
+
+    document.getElementById('switchCamBtn').onclick = () => {
+      facingMode = facingMode === "environment" ? "user" : "environment";
+      initCamera();
+    };
+
+    // Take Photo
+    document.getElementById('takePhotoBtn').onclick = () => {
+      if (!currentStream) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = cameraFeed.videoWidth;
+      canvas.height = cameraFeed.videoHeight;
+      const ctx = canvas.getContext('2d');
+      
+      // Handle mirroring on canvas if front camera
+      if (facingMode === "user") {
+        ctx.translate(canvas.width, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(cameraFeed, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob(blob => {
+        const file = new File([blob], `photo_${Date.now()}.jpg`, { type: "image/jpeg" });
+        saveToDatabase(file, "Captured Photo");
+        closeCameraModal();
+      }, 'image/jpeg', 0.9);
+    };
+
+    // Record Video
+    recordVideoBtn.onclick = () => {
+      if (!isRecording) startRecording();
+      else stopRecording();
+    };
+
+    function startRecording() {
+      recordedChunks = [];
+      try {
+        mediaRecorder = new MediaRecorder(currentStream, { mimeType: 'video/webm' });
+      } catch (e) {
+        mediaRecorder = new MediaRecorder(currentStream); // Fallback for some browsers (Safari/iOS)
       }
       
+      mediaRecorder.ondataavailable = event => { if (event.data.size > 0) recordedChunks.push(event.data); };
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: mediaRecorder.mimeType || 'video/mp4' });
+        const file = new File([blob], `video_${Date.now()}.mp4`, { type: blob.type });
+        saveToDatabase(file, "Recorded Video");
+        closeCameraModal();
+      };
+      
+      mediaRecorder.start();
+      isRecording = true;
+      recordVideoBtn.innerText = "⏹ Stop Video";
+      recordVideoBtn.classList.add("recording-active");
+    }
+
+    function stopRecording() {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        mediaRecorder.stop();
+        isRecording = false;
+        recordVideoBtn.innerText = "🔴 Start Video";
+        recordVideoBtn.classList.remove("recording-active");
+      }
+    }
+
+    // --- SLIDESHOW LOGIC ---
+    document.getElementById("slideshowBtn").onclick = () => {
+      if (mediaList.length === 0) return alert("Add some photos first!");
+      currentSlideshowIndex = 0; playNextSlide();
+    };
+
+    function playNextSlide() {
+      if (currentSlideshowIndex >= mediaList.length) currentSlideshowIndex = 0; 
       const item = mediaList[currentSlideshowIndex];
       openModal(item.type, item.url, item.caption, item.id);
       
       if (item.type.startsWith('video/')) {
-        const vidElement = modalContainer.querySelector('video');
-        vidElement.onended = () => {
-          currentSlideshowIndex++;
-          playNextSlide();
-        };
+        document.querySelector('#modalContainer video').onended = () => { currentSlideshowIndex++; playNextSlide(); };
       } else {
-        slideshowInterval = setTimeout(() => {
-          currentSlideshowIndex++;
-          playNextSlide();
-        }, 3000); 
+        slideshowInterval = setTimeout(() => { currentSlideshowIndex++; playNextSlide(); }, 3000); 
       }
     }
 
     function stopSlideshow() {
-      if (slideshowInterval) {
-        clearTimeout(slideshowInterval);
-        slideshowInterval = null;
-      }
+      if (slideshowInterval) { clearTimeout(slideshowInterval); slideshowInterval = null; }
     }
 
-    slideshowBtn.onclick = startSlideshow;
-
-    window.onclick = function(event) { if (event.target === modal) closeModal(); }
-    document.addEventListener('keydown', function(event) { if (event.key === "Escape") closeModal(); });
-
+    // Close Modals on Escape Key
+    document.addEventListener('keydown', e => {
+      if (e.key === "Escape") { closeModal(); closeCameraModal(); }
+    });
   </script>
 </body>
 </html>
