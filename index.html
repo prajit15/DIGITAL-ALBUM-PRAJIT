@@ -194,11 +194,14 @@
 
     .icon-btn {
       color: var(--gold-accent);
-      font-size: 35px;
+      font-size: 30px;
       cursor: pointer;
       transition: 0.3s;
       background: none;
       border: none;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
     }
     
     .icon-btn:hover { color: var(--danger-color); transform: scale(1.2); }
@@ -237,7 +240,6 @@
       border-radius: 12px;
       border: 4px solid var(--gold-accent);
       background-color: #000;
-      transform: scaleX(1); /* Mirror effect handled in JS */
     }
     
     .camera-actions {
@@ -279,9 +281,15 @@
 
   <main class="gallery-container" id="gallery"></main>
 
+  <!-- Background Audio for Slideshow (Instrumental royalty-free track) -->
+  <audio id="slideshowAudio" loop>
+    <source src="https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf756.mp3?filename=uplifting-pad-110599.mp3" type="audio/mpeg">
+  </audio>
+
   <!-- Viewing Modal -->
   <div id="mediaModal" class="modal">
     <div class="modal-toolbar">
+      <a id="downloadItemBtn" class="icon-btn" title="Download Photo/Video" download="memory">📥</a>
       <button id="deleteItemBtn" class="icon-btn" title="Delete this item">🗑</button>
       <button class="icon-btn close-btn" onclick="closeModal()" title="Close">✖</button>
     </div>
@@ -312,6 +320,7 @@
     let currentlyViewedDbKey = null; 
 
     const gallery = document.getElementById('gallery');
+    const slideshowAudio = document.getElementById('slideshowAudio');
     const request = indexedDB.open("GrandAlbumDB_v2", 1);
 
     request.onupgradeneeded = function(event) {
@@ -391,12 +400,16 @@
     // --- VIEWING MODAL LOGIC ---
     const mediaModal = document.getElementById("mediaModal");
     const modalContainer = document.getElementById("modalContainer");
+    const downloadItemBtn = document.getElementById("downloadItemBtn");
 
     function openModal(type, src, captionText, dbKey) {
-      stopSlideshow();
       currentlyViewedDbKey = dbKey;
       mediaModal.classList.add("show-modal");
       modalContainer.innerHTML = ""; 
+
+      // Setup download link helper
+      downloadItemBtn.href = src;
+      downloadItemBtn.download = captionText ? `${captionText.replace(/\s+/g, '_')}` : "memory";
 
       if (type.startsWith('video')) {
         const vid = document.createElement('video');
@@ -434,17 +447,16 @@
     let mediaRecorder = null;
     let recordedChunks = [];
     let isRecording = false;
-    let facingMode = "environment"; // Default to back camera
+    let facingMode = "environment"; 
 
     async function initCamera() {
       if (currentStream) { currentStream.getTracks().forEach(track => track.stop()); }
       try {
         currentStream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: facingMode },
-          audio: true // Request audio for video recording
+          audio: true 
         });
         cameraFeed.srcObject = currentStream;
-        // Mirror the feed if using front camera
         cameraFeed.style.transform = facingMode === "user" ? "scaleX(-1)" : "scaleX(1)";
       } catch (err) {
         alert("Camera access denied or unavailable.");
@@ -467,7 +479,6 @@
       initCamera();
     };
 
-    // Take Photo
     document.getElementById('takePhotoBtn').onclick = () => {
       if (!currentStream) return;
       const canvas = document.createElement('canvas');
@@ -475,7 +486,6 @@
       canvas.height = cameraFeed.videoHeight;
       const ctx = canvas.getContext('2d');
       
-      // Handle mirroring on canvas if front camera
       if (facingMode === "user") {
         ctx.translate(canvas.width, 0);
         ctx.scale(-1, 1);
@@ -489,7 +499,6 @@
       }, 'image/jpeg', 0.9);
     };
 
-    // Record Video
     recordVideoBtn.onclick = () => {
       if (!isRecording) startRecording();
       else stopRecording();
@@ -500,7 +509,7 @@
       try {
         mediaRecorder = new MediaRecorder(currentStream, { mimeType: 'video/webm' });
       } catch (e) {
-        mediaRecorder = new MediaRecorder(currentStream); // Fallback for some browsers (Safari/iOS)
+        mediaRecorder = new MediaRecorder(currentStream);
       }
       
       mediaRecorder.ondataavailable = event => { if (event.data.size > 0) recordedChunks.push(event.data); };
@@ -526,10 +535,12 @@
       }
     }
 
-    // --- SLIDESHOW LOGIC ---
+    // --- SLIDESHOW LOGIC WITH MUSIC ---
     document.getElementById("slideshowBtn").onclick = () => {
       if (mediaList.length === 0) return alert("Add some photos first!");
-      currentSlideshowIndex = 0; playNextSlide();
+      currentSlideshowIndex = 0; 
+      slideshowAudio.play().catch(e => console.log("Audio autoplay restricted by browser interaction rules."));
+      playNextSlide();
     };
 
     function playNextSlide() {
@@ -546,9 +557,10 @@
 
     function stopSlideshow() {
       if (slideshowInterval) { clearTimeout(slideshowInterval); slideshowInterval = null; }
+      slideshowAudio.pause();
+      slideshowAudio.currentTime = 0;
     }
 
-    // Close Modals on Escape Key
     document.addEventListener('keydown', e => {
       if (e.key === "Escape") { closeModal(); closeCameraModal(); }
     });
